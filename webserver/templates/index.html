@@ -8,34 +8,29 @@
 
 
 <body>
-  <h1>Main Page</h1>
-<a href="/student">Students</a>
+<h1>Main Page</h1>
+<p><a href="/student">Students</a>
 <tr><a href="/teacher">Teachers</a></tr>
 <a href="/courses">Courses</a>
 <a href="/grades">Grades</a>
 <a href="/department">Departments</a></p>
-<!--  <div>{{data}}</div>
 
-  <div>
-  <table>
-    <tr>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
-    </tr>
-    </div> --!>
+
 <form method="POST" action="/add">
 <p>Name of new student: <input type="text" name="name">
 <form method="POST" action="/add">
 UNI: <input type="text" name="uni">
 <form method="POST" action="/add">
-Class Year: <input type="number" name="class_year"><input type="submit" value="ADD"></form>
-</p>
+Class Year: <input type="number" name="class_year"><input type="submit" value="ADD"></form></p>
   <table>
     <tr>
     {% for n in data %}
     <div>{{n}}</div>
     {% endfor %}
     </tr>
-<div>{{thisyear}}</div>
+  </table>
+    <div>{{thisyear}}</div>
+
+</body>
+
 </html>
