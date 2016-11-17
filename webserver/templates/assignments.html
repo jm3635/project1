@@ -10,20 +10,23 @@
 
 <body>
 <form method="POST" action="/add_grade">
-<p>Assignment name: <input type="text" name="name">
+<p>Assignment name: <input type="text" name="name"></p>
+</form>
+
 <form method="POST" action="/add_grade">
 Grade: <input type="number" name="grade">
+</form>
+
 <form method="POST" action="add_grade">
-Student UNI: <input type="text" name="submitted_by"><input type="submit">
-</p>
+<p>Student UNI: <input type="text" name="submitted_by"><input type="submit"></p>
+</form>
   <table>  
   {% for row in data %}
     <tr>
     <td>{{row}}</td>
     </tr>
   {% endfor %}
-  </ul>
-   
-</form>
+  </table> 
 
+</body>
 </html>
