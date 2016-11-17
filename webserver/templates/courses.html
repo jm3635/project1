@@ -1,0 +1,29 @@
+<html>
+  <style>
+    body{
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <h1>Courses</h1>
+  <p><a href="/">Main Page</a></p>
+
+
+<form method="POST" action="/add_course">
+<p>Course ID: <input type="number" name="cid">
+<form method="POST" action="/add_course">
+Name of course: <input type="text" name="name">
+<form method="POST" action="/add_course">
+Semester and Year offered: <input type="text" name="semester_year"><input type="submit"> </p>
+</form>
+
+  <div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+</html>

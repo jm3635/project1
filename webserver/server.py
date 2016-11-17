@@ -16,62 +16,28 @@ Read about it online.
 """
 
 import os
+from operator import itemgetter
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, flash, g, redirect, Response, url_for
+import time
+from datetime import date
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
+app.secret_key = 'something'
 
-
-#
-# The following uses the postgresql test.db -- you can use this for debugging purposes
-# However for the project you will need to connect to your Part 2 database in order to use the
-# data
-#
-# XXX: The URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/postgres
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@<IP_OF_POSTGRE_SQL_SERVER>/postgres"
-#
 # Swap out the URI below with the URI for the database created in part 2
-DATABASEURI = "sqlite:///test.db"
+DATABASEURI = "postgresql://jm3635:myz22@104.196.175.120/postgres"
 
-
-#
 # This line creates a database engine that knows how to connect to the URI above
 #
 engine = create_engine(DATABASEURI)
-
-
-#
-# START SQLITE SETUP CODE
-#
-# after these statements run, you should see a file test.db in your webserver/ directory
-# this is a sqlite database that you can query like psql typing in the shell command line:
-# 
-#     sqlite3 test.db
 #
 # The following sqlite3 commands may be useful:
 # 
 #     .tables               -- will list the tables in the database
 #     .schema <tablename>   -- print CREATE TABLE statement for table
-# 
-# The setup code should be deleted once you switch to using the Part 2 postgresql database
-#
-engine.execute("""DROP TABLE IF EXISTS test;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-#
-# END SQLITE SETUP CODE
-#
-
 
 
 @app.before_request
@@ -101,17 +67,7 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
-
-#
-# @app.route is a decorator around index() that means:
-#   run index() whenever the user tries to access the "/" path using a GET request
-#
-# If you wanted the user to go to e.g., localhost:8111/foobar/ with POST or GET then you could use
-#
-#       @app.route("/foobar/", methods=["POST", "GET"])
-#
-# PROTIP: (the trailing / in the path is important)
-# 
+ 
 # see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
@@ -127,19 +83,41 @@ def index():
   See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
   """
 
-  # DEBUG: this is debugging code to see what request looks like
   print request.args
-
-
-  #
-  # example of a database query
-  #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
+  thisyear = date.year
+#  print thisyear
+  cursor = g.conn.execute("SELECT * FROM student")
+  account_names = []
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    name = result['name']
+    uni = result['uni']
+    if name is None:
+      name = 'not given'
+    if uni is None:
+      uni = 'does not have';
+    year = result['class_year']
+    if year < thisyear:
+      year = 0
+    account_name = {
+      'Student Name':(result['name']), #result['name'],
+      'UNI': uni, #result['uni']
+      'Class Year': result['class_year']
+    }
+    account_names.append(account_name
+)
   cursor.close()
-
+  
+  account_names = sorted(account_names, key=itemgetter('Student Name'))
+  i=0;
+  while i < len(account_names)-1:
+    while i< len(account_names) -1 and account_names[i]['Student Name'] == account_names[i+1]['Student Name']:
+      if account_names[i+1]['uni'][0] not in account_names[i]['uni']:
+        account_names[i]['uni'].append(account_names[i+1]['uni'][0])
+      if account_names[i+1]['class_year'][0] not in account_names[i]['class_year']:
+        account_names[i]['class_year'].append(account_names[i+1]['class_year'][0])
+      account_names.pop(i+1)
+      i+=1 
+  cursor.close()
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
   # pass data to a template and dynamically generate HTML based on the data
@@ -166,7 +144,7 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  context = dict(data = account_names)
 
 
   #
@@ -174,30 +152,469 @@ def index():
   # for example, the below file reads template/index.html
   #
   return render_template("index.html", **context)
-
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
-#
-@app.route('/another')
+@app.route('/student/')
 def another():
-  return render_template("anotherfile.html")
+  cursor = g.conn.execute("SELECT * FROM student")
+  account_names = []
+
+  for result in cursor:
+    name = result['name']
+    uni = result['uni']
+    if name is None:
+      name = 'not given'
+    if uni is None:
+      uni = 'does not have';
+    year = result['class_year']
+    account_name = {
+      'Student Name':(result['name']), #result['name'],
+      'UNI': uni, 
+      'Class Year': result['class_year']
+    }
+    account_names.append(account_name)
+ 
+  cursor.close()
+
+  account_names = sorted(account_names, key=itemgetter('Student Name'))
+  i=0;
+  while i < len(account_names)-1:
+    while i< len(account_names) -1 and account_names[i]['Student Name'] == account_names[i+1]['Student Name']:
+      if account_names[i+1]['uni'][0] not in account_names[i]['uni']:
+       account_names[i]['uni'].append(account_names[i+1]['uni'][0])
+      if account_names[i+1]['class_year'][0] not in account_names[i]['class_year']:
+        account_names[i]['class_year'].append(account_names[i+1]['class_year'][0])
+      account_names.pop(i+1)
+    i+=1
+  cursor.close()
+  context = dict(data = account_names)
+
+  return render_template("anotherfile.html", **context)
+
+@app.route('/teacher')
+def teacher():
+
+  cursor = g.conn.execute("SELECT * FROM teacher")
+  account_names = []
+
+  for result in cursor:
+    name = result['name']
+    uni = result['uni']
+    if name is None:
+      name = 'not given'
+    if uni is None:
+      uni = 'does not have';
+    dept = result['department']
+    account_name = {
+      'Teacher Name':(result['name']),
+      'UNI': uni,
+      'Department': result['department']
+    }
+    account_names.append(account_name)
+  cursor.close()
+
+  account_names = sorted(account_names, key=itemgetter('Teacher Name'))
+  i=0;
+  while i < len(account_names)-1:
+    while i< len(account_names) -1 and account_names[i]['Teacher Name'] == account_names[i+1]['Teacher Name']:
+      if account_names[i+1]['uni'][0] not in account_names[i]['uni']:
+       account_names[i]['uni'].append(account_names[i+1]['uni'][0])
+      if account_names[i+1]['department'][0] not in account_names[i]['department']:
+        account_names[i]['department'].append(account_names[i+1]['department'][0])
+      account_names.pop(i+1)
+    i+=1
+  cursor.close()
+  context = dict(data = account_names)
+
+  return render_template("teacher.html", **context)
+
+@app.route('/courses')
+def courses():
+  cursor = g.conn.execute("SELECT * FROM course")
+  courses = []
+
+  for result in cursor:
+    cid = result['cid']
+    name = result['name']
+    if name is None:
+      name = 'not given'
+    if cid is None:
+      cid = '0';
+    offered = result['semester_year']
+    course = {
+      'CID':result['cid'],
+      'Course Name': result['name'], 
+      'Offered': result['semester_year']
+    }
+    courses.append(course) 
+  cursor.close()
+#  courses = sorted(course, key=itemgetter('Course Name'))
+#  i=0;
+#  while i < len(courses)-1:
+#    while i< len(courses) -1 and courses[i]['Teacher Name'] == courses[i+1]['Teacher Name']:
+#      if courses[i+1]['Teacher Name'][0] not in courses[i]['Teacher Name']:
+#       courses[i]['Teacher Name'].append(courses[i+1]['Teacher Name'][0])
+#      courses.pop(i+1)
+#    i+=1
+  context = dict(data = courses)
+  return render_template("courses.html", **context)
+
+@app.route('/assignments')
+def assignments():
+  cursor = g.conn.execute("SELECT * FROM assignments")
+  assignments = []
+  for result in cursor:
+    name = result['name']
+    uni = result['uni']
+    if name is None:
+      name = 'not given'
+    if uni is None:
+      uni = 'does not exist';
+
+    assignment = {
+      'Assignment Name':(result['name']),
+      'UNI': (result['uni'])
+    }
+
+    assignments.append(assignment)
+  cursor.close()
+#  assignments = sorted(assignment, key=itemgetter('uni'))
+  context = dict(data = assignments)
+  return render_template("assignments.html", **context)
+
+@app.route('/grades')
+def grades():
+  cursor = g.conn.execute("SELECT * FROM grades")
+  grades = []
+  for result in cursor:
+    name = result['name']
+    score = result['grade']
+    if name is None:
+      name = 'not given'
+    if score is None:
+      score = ['0'];
+    submitted_by = result['submitted_by']
+    grade = {
+      'Assignment Name':(result['name']),
+      'GRADE': score, 
+      'Submitted By': result['submitted_by']
+    }
+
+    grades.append(grade)  
+  cursor.close()
+#  grades = sorted(grade, key=itemgetter('name'))
+
+  context = dict(data = grades)
+  return render_template("grades.html", **context)
+
+@app.route('/department')
+def departments():
+  cursor = g.conn.execute("SELECT * FROM department")
+  departments = []
+  for result in cursor:
+    name = result['dept_name']
+
+    if name is None:
+      name = 'not given'
+    department = {
+      'Department Name':(result['dept_name'])
+    }
+
+    departments.append(department)
+  cursor.close()
+
+#  departments = sorted(department, key=itemgetter('name'))
+
+  context = dict(data = departments)
+  return render_template("departments.html", **context)
 
 
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  print name
-  cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)';
-  g.conn.execute(text(cmd), name1 = name, name2 = name);
-  return redirect('/')
+# Add Student on Main Page
+@app.route('/add', methods=['POST', 'GET'])
+def add_main():
+  print request.args
+  thisyear = date.year
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM student;
+    """
+
+    cursor = g.conn.execute(sql)
+    
+    name = request.form['name']
+    uni = request.form['uni']
+    class_year = request.form['class_year']
+
+    sql = """
+      SELECT * FROM student s
+      WHERE s.uni = %s
+    """
+    cursor = g.conn.execute(sql, (uni))
+    if cursor.fetchone() is not None:
+      flash('UNI already taken!')
+      return redirect(url_for('index'))
+    
+    sql = """
+      SELECT * FROM student s
+      WHERE s.class_year = %s
+    """
+    cursor = g.conn.execute(sql, (class_year))
+    if cursor.fetchone() < thisyear:
+      flash('Cannot be Class Year')
+      return redirect(url_for('index'))
+
+    sql = """
+      INSERT INTO student VALUES
+      (%s, %s, %s )
+    """ 
+
+    cursor = g.conn.execute(sql, (name, uni, class_year))
+    cursor.close()
+    return redirect('/student')
+
+  else:
+    cursor.close()
+    return redirect('/')
+
+@app.route('/add_student', methods=['POST', 'GET'])
+def add_student():
+  print request.args
+  thisyear = date.year
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM student;
+    """
+
+    cursor = g.conn.execute(sql)
+
+    name = request.form['name']
+    uni = request.form['uni']
+    class_year = request.form['class_year']
+
+    sql = """
+      SELECT * FROM student s
+      WHERE s.uni = %s
+    """
+
+    cursor = g.conn.execute(sql, (uni))
+    if cursor.fetchone() is not None:
+      flash('UNI already taken!')
+      return redirect('/index')
+  
+    sql = """
+      SELECT * FROM student s
+      WHERE s.class_year = %s
+    """
+    cursor = g.conn.execute(sql, (class_year))
+    if cursor.fetchone() < thisyear:
+      flash('Cannot be Class Year')
+      return redirect('/student')
+ 
+    sql = """
+      INSERT INTO student VALUES
+      (%s, %s, %s )
+    """
+
+    cursor = g.conn.execute(sql, (name, uni, class_year))
+    cursor.close()
+    return redirect('/student')
+  else:
+    cursor.close()
+    return redirect('/')
+
+@app.route('/add_teacher', methods=['POST', 'GET'])
+def add_teacher():
+  print request.args
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM teacher;
+    """
+
+    cursor = g.conn.execute(sql)
+
+    name = request.form['name']
+    uni = request.form['uni']
+    department = request.form['department']
+
+    sql = """
+      SELECT * FROM teacher t
+      WHERE t.uni = %s
+    """
+
+    cursor = g.conn.execute(sql, (uni))
+    if cursor.fetchone() is not None:
+      flash('UNI already taken!')
+      return redirect('/teacher')
+ 
+    sql = """
+      SELECT * FROM teacher t
+      WHERE t.department = %s
+    """
+
+    cursor = g.conn.execute(sql, (department))
+    if cursor.fetchone() is  None:
+      flash('Department does not exist!')
+      return redirect('/teacher')
+
+    sql = """
+      INSERT INTO teacher VALUES
+      (%s, %s, %s )
+    """
+
+    cursor = g.conn.execute(sql, (name, uni, department))
+    cursor.close()
+    return redirect('/teacher')
+  else:
+    cursor.close()
+    return redirect('/')
+
+@app.route('/add_course', methods=['POST', 'GET'])
+def add_course():
+  print request.args
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM course;
+    """
+    cursor = g.conn.execute(sql)
+    cid = request.form['cid']
+    name = request.form['name']
+    semester_year = request.form['semester_year']
+
+    sql = """
+      SELECT * FROM course c
+      WHERE c.cid = %s
+    """
+    cursor = g.conn.execute(sql, (cid))
+    if cursor.fetchone() is not None:
+      flash('Class already exists!')
+      return redirect('/')
+
+    sql = """
+      INSERT INTO course VALUES
+      (%s, %s, %s )
+    """
+    cursor = g.conn.execute(sql, (cid, name, semester_year))
+    cursor.close()
+    return redirect('/courses')
+  else:
+    cursor.close()
+    return redirect('/')
+
+@app.route('/add_grade', methods=['POST', 'GET'])
+def add_grade():
+  print request.args
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM grades;
+    """
+    cursor = g.conn.execute(sql)
+    grade = request.form['grade']
+#  print name
+    name = request.form['name']
+#  print uni
+    submitted_by = request.form['submitted_by']
+
+    sql = """
+      SELECT * FROM grades g
+      WHERE g.submitted_by = %s AND g.name = %s
+    """
+    cursor = g.conn.execute(sql, (name, submitted_by))
+    if cursor.fetchone() is not None:
+      flash('Already submitted!')
+      return redirect('/assignments')
+
+    sql = """
+      SELECT * FROM grades g
+      WHERE g.grade = %s
+    """
+    cursor = g.conn.execute(sql, (grade))
+    if cursor.fetchone() < 0 or cursor.fetchone() > 100:
+      flash('Grades between 0 and 100')
+      return redirect('/grades')
+
+    sql = """
+      INSERT INTO grades VALUES
+      (%s, %s, %s )
+    """
+    cursor = g.conn.execute(sql, (grade, name, submitted_by))
+    cursor.close()
+    return redirect('/grades')
+  else:
+    cursor.close()
+    return redirect('/')
+
+@app.route('/add_department', methods=['POST', 'GET'])
+def add_department():
+  print request.args
+  if request.method == 'POST':
+    sql = """
+      SELECT COUNT(*) FROM department;
+    """
+    cursor = g.conn.execute(sql)
+    name = request.form['dept_name']
+
+    sql = """
+      SELECT * FROM  department d
+      WHERE d.dept_name = %s
+    """
+    cursor = g.conn.execute(sql, (name))
+    if cursor.fetchone() is not None:
+      flash('Department Already Exists!')
+      return redirect('/department')
+
+    sql = """
+      INSERT INTO department VALUES
+      (%s )
+    """
+    cursor = g.conn.execute(sql, (name))
+    cursor.close()
+    return redirect('/department')
+  else:
+    cursor.close()
+    return redirect('/')
 
 
+@app.route('/stud_avg')
+def stud_avg():
+
+  print request.args
+
+  sql = """SELECT AVG(G.grade) 
+    FROM grades as G, student as S
+    WHERE G.submitted_by = S.uni
+  """
+  cursor = g.conn.execute(sql)
+
+  averages = []
+  for result in cursor:
+    grade = result[0]
+    average = {
+      'Average': grade
+    }
+    averages.append(average)
+    cursor.close() 
+  context = dict( data = averages ) 
+  return render_template("grades.html", **context)
+
+@app.route('/stud_range')
+def stud_range():
+
+  print request.args
+
+  sql = """Select S.uni, G.grade
+FROM student as S, grades as g
+Where S.uni = A.submitted_by IN ( SELECT * FROM Grade G WHERE G.grade >= <90> AND G.grade <= <85>)
+  """
+  cursor = g.conn.execute(sql)
+
+  averages = []
+  for result in cursor:
+    grade = result[0]
+    average = {
+      'Average': grade
+    }
+    averages.append(average)
+    cursor.close()
+  context = dict( data = averages )
+  return render_template("grades.html", **context)
 @app.route('/login')
 def login():
     abort(401)

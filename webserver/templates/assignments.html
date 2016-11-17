@@ -1,0 +1,29 @@
+<html>
+  <style>
+    body{
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+  <h1>Assignments</h1>
+  <p><a href="/">Main Page</a></p> 
+
+<body>
+<form method="POST" action="/add_grade">
+<p>Assignment name: <input type="text" name="name">
+<form method="POST" action="/add_grade">
+Grade: <input type="number" name="grade">
+<form method="POST" action="add_grade">
+Student UNI: <input type="text" name="submitted_by"><input type="submit">
+</p>
+  <table>  
+  {% for row in data %}
+    <tr>
+    <td>{{row}}</td>
+    </tr>
+  {% endfor %}
+  </ul>
+   
+</form>
+
+</html>

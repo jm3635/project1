@@ -1,0 +1,23 @@
+<html>
+  <style>
+     body{
+         font-size: 15pt;
+         font-family: arial;
+       }
+</style>
+<body>
+  <h1>Departments</h1>
+
+  <td><a href="/">Main Page</a></td>
+  <td><a href="/courses">Classes</a></td>
+<form method="POST" action="/add_department">
+<p>Add Department:<input type="text" name="dept_name"><input type="submit" value="Add Department"></p>
+</form>
+
+  <div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
+    </div>
+</html>
+
