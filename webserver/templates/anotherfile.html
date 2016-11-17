@@ -10,11 +10,15 @@
 
   <td><a href="/">Main Page</a></td>
 <form method="POST" action="/add_student">
-<p>Add Student: <input type="text" name="name">
+<p>Add Student: <input type="text" name="name"></p>
+</form>
+
 <form method="POST" action="/add_student">
-UNI: <input type="text" name="uni">
+  <p>UNI: <input type="text" name="uni"></p>
+</form> 
+
 <form method="POST" action="/add_student">
-Class Year: <input type="number" name="class_year"><input type="submit" value="Add"></p>
+<p>Class Year: <input type="number" name="class_year"><input type="submit" value="Add"></p>
 </form>
 
   <div>
@@ -22,10 +26,14 @@ Class Year: <input type="number" name="class_year"><input type="submit" value="A
     <div>{{n}}</div>
     {% endfor %}
     </div>
-<form method="POST" action"/stud_avg">
-Average score: <input type="submit" value="check"></p>
-<form method="POST" action"/stud_range">
-Range <input type="submit" value="check"></p>
+<form method="POST" action="/stud_avg">
+<p>Average score: <input type="submit" value="check"></p>
+  </form>
+<form method="POST" action="/stud_range">
+<p>Range <input type="submit" value="check"></p>
+</form>
+
+</body>
 </html>
 
 
