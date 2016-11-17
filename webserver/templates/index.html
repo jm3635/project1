@@ -16,12 +16,14 @@
 <a href="/department">Departments</a></p>
 
 
+
 <form method="POST" action="/add">
-<p>Name of new student: <input type="text" name="name">
+Name of new student: <input type="text" name="name">
 <form method="POST" action="/add">
 UNI: <input type="text" name="uni">
 <form method="POST" action="/add">
-Class Year: <input type="number" name="class_year"><input type="submit" value="ADD"></form></p>
+  <p>Class Year: <input type="number" name="class_year"><input type="submit" value="ADD"></p>
+</form>
   <table>
     <tr>
     {% for n in data %}
