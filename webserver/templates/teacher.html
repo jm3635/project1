@@ -10,17 +10,19 @@
   <p><a href="/assignments">Go to assignments</a>
   <td><a href="/">Main Page</a></td></p>
 <form method="POST" action="/add_teacher">
-<p>Add Teacher: <input type="text" name="name">
+<p>Add Teacher: <input type="text" name="name"><p>
+</form>
+  
 <form method="POST" action="/add_teacher">
-UNI: <input type="text" name="uni">
+<p>UNI: <input type="text" name="uni"></p>
+</form>  
 <form method="POST" action="/add_teacher">
-Department: <input type="text" name="department"><input type="submit" value="Add">
-</p>
+<p>Department: <input type="text" name="department"><input type="submit" value="Add"></p>
 </form>
   <div>
     {% for n in data %}
     <div>{{n}}</div>
     {% endfor %}
   </div>
-
+</body>
 </html>
