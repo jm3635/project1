@@ -14,10 +14,14 @@
 
 <form method="POST" action="/add_course">
 <p>Course ID: <input type="number" name="cid">
+</form>
+ 
 <form method="POST" action="/add_course">
-Name of course: <input type="text" name="name">
+<p>Name of course: <input type="text" name="name"></p>
+</form> 
+  
 <form method="POST" action="/add_course">
-Semester and Year offered: <input type="text" name="semester_year"><input type="submit"> </p>
+<p>Semester and Year offered: <input type="text" name="semester_year"><input type="submit"> </p>
 </form>
 
   <div>
@@ -26,4 +30,5 @@ Semester and Year offered: <input type="text" name="semester_year"><input type="
     {% endfor %}
   </div>
 
+</body>
 </html>
