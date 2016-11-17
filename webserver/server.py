@@ -103,9 +103,9 @@ def index():
       'UNI': uni, #result['uni']
       'Class Year': result['class_year']
     }
-    account_names.append(account_name
-)
-  cursor.close()
+    account_names.append(account_name)
+    
+  #cursor.close()
   
   account_names = sorted(account_names, key=itemgetter('Student Name'))
   i=0;
